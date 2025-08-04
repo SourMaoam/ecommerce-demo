@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../../hooks/useCart';
+import { useCart } from '../../contexts/CartContext';
 import CartItem from './CartItem';
 import LoadingSpinner from '../common/LoadingSpinner';
 import styles from './ShoppingCart.module.css';
