@@ -1,7 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { apiService } from '../services/api';
 
+const CartContext = createContext();
+
 export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
+
+export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,7 +28,7 @@ export const useCart = () => {
       setCart(response.data || { items: [], total: 0 });
     } catch (err) {
       // For now, use local storage when API is not available
-      console.warn('API not available, using local storage');
+      console.warn('API not available, using local storage', err);
       const localCart = getCartFromLocalStorage();
       setCart(localCart);
       setError(null); // Don't show error for local storage
@@ -104,8 +114,12 @@ export const useCart = () => {
     setError(null);
     
     try {
-      // Clear cart
-      await apiService.clearCart(userId);
+      // Since there's no clear cart endpoint, remove all items individually
+      const removePromises = cart.items.map(item => 
+        apiService.removeFromCart(item.id)
+      );
+      await Promise.all(removePromises);
+      
       // Set empty cart
       setCart({ items: [], total: 0 });
     } catch (err) {
@@ -117,7 +131,7 @@ export const useCart = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [cart.items]);
 
   // Load cart on mount
   useEffect(() => {
@@ -127,7 +141,7 @@ export const useCart = () => {
   // Calculate cart items count
   const cartItemsCount = cart.items.reduce((total, item) => total + item.quantity, 0);
 
-  return {
+  const value = {
     cart,
     cartItemsCount,
     loading,
@@ -138,6 +152,12 @@ export const useCart = () => {
     clearCart,
     fetchCart,
   };
+
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 };
 
 // Local storage helper functions for development

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../../hooks/useCart';
+import { useCart } from '../../contexts/CartContext';
 import { useOrders } from '../../hooks/useOrders';
 import CartReview from './CartReview';
 import ShippingForm from './ShippingForm';

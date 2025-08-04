@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '../../hooks/useProducts';
-import { useCart } from '../../hooks/useCart';
+import { useCart } from '../../contexts/CartContext';
 import LoadingSpinner from '../common/LoadingSpinner';
 import styles from './ProductDetail.module.css';
 
