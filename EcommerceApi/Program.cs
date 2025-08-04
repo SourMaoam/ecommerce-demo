@@ -171,7 +171,15 @@ app.MapGet("/api/cart/{userId}", async (string userId, EcommerceDbContext db) =>
         })
         .ToListAsync();
 
-    return Results.Ok(cartItems);
+    var total = cartItems.Sum(item => item.Product?.Price * item.Quantity ?? 0);
+    
+    var cart = new CartDto
+    {
+        Items = cartItems,
+        Total = total
+    };
+
+    return Results.Ok(cart);
 })
 .WithName("GetCart")
 .WithOpenApi();

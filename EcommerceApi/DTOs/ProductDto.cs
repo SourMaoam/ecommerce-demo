@@ -10,6 +10,7 @@ public class ProductDto
     public string ImageUrl { get; set; } = string.Empty;
     public int StockQuantity { get; set; }
     public bool IsActive { get; set; }
+    public bool InStock => StockQuantity > 0 && IsActive;
 }
 
 public class CreateProductDto

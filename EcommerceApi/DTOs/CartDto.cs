@@ -1,5 +1,11 @@
 namespace EcommerceApi.DTOs;
 
+public class CartDto
+{
+    public List<CartItemDto> Items { get; set; } = new();
+    public decimal Total { get; set; }
+}
+
 public class CartItemDto
 {
     public int Id { get; set; }
