@@ -60,13 +60,12 @@ const Checkout = () => {
     try {
       const orderData = {
         userId: 'temp-user-id', // This would come from authentication
-        cartItems: cart.items,
+        cartItemIds: cart.items?.map(item => item.id) || [],
         shippingAddress: shippingInfo,
         paymentMethod: {
           type: 'credit_card',
           last4: paymentInfo.cardNumber.slice(-4)
-        },
-        total: cart.total * 1.08 // Including tax
+        }
       };
 
       const order = await createOrder(orderData);

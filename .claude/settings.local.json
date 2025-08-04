@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dotnet build)",
       "Bash(timeout:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(dotnet run:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }
