@@ -7,4 +7,15 @@
     ],
     "deny": []
   }
+}{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm start)",
+      "Bash(npm install)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
 }
