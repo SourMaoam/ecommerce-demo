@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// API base URL - will be updated when backend is available
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// API base URL - connected to backend server
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5217/api';
 
 // Create axios instance
 const api = axios.create({
@@ -62,11 +62,11 @@ export const apiService = {
   },
 
   updateCartItem: (itemId, data) => {
-    return api.put(`/cart/update/${itemId}`, data);
+    return api.put(`/cart/${itemId}`, data);
   },
 
   removeFromCart: (itemId) => {
-    return api.delete(`/cart/remove/${itemId}`);
+    return api.delete(`/cart/${itemId}`);
   },
 
   clearCart: (userId) => {

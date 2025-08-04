@@ -21,7 +21,9 @@ export const useProducts = () => {
       }, {});
 
       const response = await apiService.getProducts(cleanedFilters);
-      setProducts(response.data || []);
+      // Handle pagination response format: {products: [...], total, page, limit}
+      const productsData = response.data.products || response.data;
+      setProducts(Array.isArray(productsData) ? productsData : []);
     } catch (err) {
       // For now, use mock data when API is not available
       console.warn('API not available, using mock data');
