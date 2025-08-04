@@ -1,0 +1,153 @@
+.cartItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+  align-items: center;
+  transition: opacity 0.3s;
+}
+
+.cartItem.removing {
+  opacity: 0.5;
+}
+
+.productImage {
+  width: 80px;
+  height: 80px;
+}
+
+.productImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+.productDetails {
+  flex: 1;
+}
+
+.productName {
+  font-weight: 600;
+  color: #333;
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.productName:hover {
+  color: #007bff;
+}
+
+.productDescription {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.category {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.quantityBtn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ced4da;
+  background: white;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantityBtn:hover:not(:disabled) {
+  background-color: #f8f9fa;
+}
+
+.quantityBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity {
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.priceSection {
+  text-align: right;
+}
+
+.unitPrice {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.totalPrice {
+  font-weight: 700;
+  color: #007bff;
+  font-size: 1.1rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.removeButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.removeButton:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.removeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .cartItem {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    text-align: center;
+  }
+  
+  .productImage {
+    justify-self: center;
+  }
+  
+  .quantityControls {
+    justify-content: center;
+  }
+  
+  .priceSection {
+    text-align: center;
+  }
+}

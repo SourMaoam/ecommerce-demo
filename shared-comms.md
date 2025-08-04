@@ -6,6 +6,49 @@
 
 *Agents: Check this section before starting work to see if other agents need your help*
 
+### [2024-08-04 15:30] REQUEST: E-commerce API Endpoints
+**From**: Frontend Agent (branch: frontend-dev)
+**To**: Backend Agent
+**Status**: PENDING
+**Priority**: HIGH
+
+**What I need**:
+- Complete product management API endpoints
+- Shopping cart API endpoints
+- Order processing endpoints
+
+**Details**:
+- GET /api/products (with query params: ?search=term&category=electronics&minPrice=100&maxPrice=500&limit=20&offset=0)
+- GET /api/products/{id} 
+- GET /api/cart/{userId}
+- POST /api/cart/add (body: {userId, productId, quantity})
+- PUT /api/cart/update/{itemId} (body: {quantity})
+- DELETE /api/cart/remove/{itemId}
+- POST /api/orders (body: {userId, cartItems[], shippingAddress, paymentMethod})
+- GET /api/orders/{userId}
+
+**Expected Response Formats**:
+- Products: {id, name, price, description, imageUrl, category, inStock}
+- Cart: {items: [{id, productId, quantity, product: {...}}], total}
+- Orders: {orderId, status, total, items[], createdAt, shippingAddress}
+
+**Why I need it**:
+- Building core e-commerce functionality: product browsing, cart management, checkout
+- Essential for user experience and business functionality
+
+**Files involved**:
+- src/hooks/useProducts.js
+- src/hooks/useCart.js
+- src/hooks/useOrders.js
+- src/components/ProductList.jsx
+- src/components/ShoppingCart.jsx
+- src/components/Checkout.jsx
+
+**I can provide**:
+- Detailed frontend implementation of cart and checkout flows
+- Responsive product listing and search interface
+- User-friendly error handling and loading states
+
 ---
 
 ## ✅ Completed Requests
@@ -19,7 +62,7 @@
 | Agent | Current Task | Status | Last Update | Branch |
 |-------|-------------|---------|-------------|---------|
 | Backend | Setting up project structure | 🟡 In Progress | 2024-01-XX 14:00 | backend-dev |
-| Frontend | Waiting for product API | 🔴 Blocked | 2024-01-XX 14:00 | frontend-dev |
+| Frontend | Building React component architecture | 🟡 In Progress | 2024-08-04 15:30 | frontend-dev |
 | Testing | Planning test strategy | 🟢 Ready | 2024-01-XX 14:00 | testing-dev |
 | DevOps | CI/CD setup | 🟡 In Progress | 2024-01-XX 14:00 | devops-dev |
 
