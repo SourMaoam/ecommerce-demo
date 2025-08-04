@@ -5,6 +5,8 @@
       "Bash(mkdir:*)",
       "Bash(npm start)",
       "Bash(npm install)",
+      "Bash(dotnet build)",
+      "Bash(timeout:*)",
       "Bash(git add:*)"
     ],
     "deny": []
