@@ -32,15 +32,18 @@ export const useCart = () => {
     setError(null);
     
     try {
-      const response = await apiService.addToCart({
+      // Add item to cart
+      await apiService.addToCart({
         userId,
         productId,
         quantity
       });
-      setCart(response.data);
+      // Fetch updated cart after adding item
+      const cartResponse = await apiService.getCart(userId);
+      setCart(cartResponse.data);
     } catch (err) {
       // For now, use local storage when API is not available
-      console.warn('API not available, using local storage');
+      console.warn('API not available, using local storage', err);
       addToLocalCart(productId, quantity);
       const localCart = getCartFromLocalStorage();
       setCart(localCart);
@@ -57,11 +60,14 @@ export const useCart = () => {
     setError(null);
     
     try {
-      const response = await apiService.updateCartItem(itemId, { quantity });
-      setCart(response.data);
+      // Update cart item quantity
+      await apiService.updateCartItem(itemId, { quantity });
+      // Fetch updated cart after updating
+      const cartResponse = await apiService.getCart(userId);
+      setCart(cartResponse.data);
     } catch (err) {
       // For now, use local storage when API is not available
-      console.warn('API not available, using local storage');
+      console.warn('API not available, using local storage', err);
       updateLocalCartItem(itemId, quantity);
       const localCart = getCartFromLocalStorage();
       setCart(localCart);
@@ -69,18 +75,21 @@ export const useCart = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   const removeFromCart = useCallback(async (itemId) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await apiService.removeFromCart(itemId);
-      setCart(response.data);
+      // Remove item from cart
+      await apiService.removeFromCart(itemId);
+      // Fetch updated cart after removing
+      const cartResponse = await apiService.getCart(userId);
+      setCart(cartResponse.data);
     } catch (err) {
       // For now, use local storage when API is not available
-      console.warn('API not available, using local storage');
+      console.warn('API not available, using local storage', err);
       removeFromLocalCart(itemId);
       const localCart = getCartFromLocalStorage();
       setCart(localCart);
@@ -88,18 +97,20 @@ export const useCart = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
   const clearCart = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await apiService.clearCart(userId);
-      setCart(response.data || { items: [], total: 0 });
+      // Clear cart
+      await apiService.clearCart(userId);
+      // Set empty cart
+      setCart({ items: [], total: 0 });
     } catch (err) {
       // For now, use local storage when API is not available
-      console.warn('API not available, using local storage');
+      console.warn('API not available, using local storage', err);
       clearLocalCart();
       setCart({ items: [], total: 0 });
       setError(null);
