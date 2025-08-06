@@ -12,7 +12,8 @@
       "Bash(curl:*)",
       "Bash(rm:*)",
       "Bash(npm run build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
