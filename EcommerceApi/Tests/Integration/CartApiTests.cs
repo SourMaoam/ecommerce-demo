@@ -9,7 +9,7 @@ public class CartApiTests : IClassFixture<TestWebApplicationFactory<Program>>
 {
     private readonly HttpClient _client;
     private readonly TestWebApplicationFactory<Program> _factory;
-    private readonly string _testUserId = "test-user-123";
+    private readonly string _testUserId = $"test-user-{Guid.NewGuid()}";
 
     public CartApiTests(TestWebApplicationFactory<Program> factory)
     {

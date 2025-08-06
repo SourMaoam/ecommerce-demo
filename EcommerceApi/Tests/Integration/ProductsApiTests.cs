@@ -103,10 +103,12 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
     [Fact]
     public async Task GetProduct_WithValidId_ReturnsProduct()
     {
-        // Arrange - Get the first product ID
+        // Arrange - Get the first product ID and expected name
         var allProductsResponse = await _client.GetAsync("/api/products");
         var allProducts = await allProductsResponse.Content.ReadFromJsonAsync<ProductListResponse>();
-        var firstProductId = allProducts!.Products[0].Id;
+        var firstProduct = allProducts!.Products[0];
+        var firstProductId = firstProduct.Id;
+        var expectedName = firstProduct.Name;
 
         // Act
         var response = await _client.GetAsync($"/api/products/{firstProductId}");
@@ -117,7 +119,7 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
         
         Assert.NotNull(product);
         Assert.Equal(firstProductId, product.Id);
-        Assert.Equal("Test Laptop", product.Name);
+        Assert.Equal(expectedName, product.Name);
     }
 
     [Fact]

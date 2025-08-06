@@ -146,6 +146,22 @@ app.MapGet("/api/categories", async (EcommerceDbContext db) =>
 
 app.MapPost("/api/products", async (CreateProductDto createDto, EcommerceDbContext db) =>
 {
+    // Manual validation for Data Annotations
+    if (string.IsNullOrWhiteSpace(createDto.Name))
+        return Results.BadRequest(new { error = "Name is required" });
+        
+    if (string.IsNullOrWhiteSpace(createDto.Description))
+        return Results.BadRequest(new { error = "Description is required" });
+        
+    if (string.IsNullOrWhiteSpace(createDto.Category))
+        return Results.BadRequest(new { error = "Category is required" });
+        
+    if (createDto.Price <= 0)
+        return Results.BadRequest(new { error = "Price must be greater than 0" });
+        
+    if (createDto.StockQuantity < 0)
+        return Results.BadRequest(new { error = "Stock quantity cannot be negative" });
+
     var product = new Product
     {
         Name = createDto.Name,
