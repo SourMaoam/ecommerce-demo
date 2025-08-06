@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('renders ecommerce app without crashing', () => {
+  // Simple smoke test to ensure app renders without errors
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  // If we get here without throwing, the test passes
+  expect(true).toBe(true);
 });

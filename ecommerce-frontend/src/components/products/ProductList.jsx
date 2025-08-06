@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import ProductFilters from './ProductFilters';
@@ -18,13 +18,18 @@ const ProductList = () => {
 
   const { products, loading, error, fetchProducts } = useProducts();
 
+  // Debounced search effect
   useEffect(() => {
-    fetchProducts(filters);
+    const timeoutId = setTimeout(() => {
+      fetchProducts(filters);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [filters, fetchProducts]);
 
-  const handleFilterChange = (newFilters) => {
+  const handleFilterChange = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-  };
+  }, []);
 
   if (loading) {
     return <LoadingSpinner />;

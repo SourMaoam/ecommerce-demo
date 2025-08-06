@@ -20,7 +20,10 @@
       "Bash(npx playwright:*)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(set PORT=3001)"
+      "Bash(set PORT=3001)",
+      "Bash(git push:*)",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }
