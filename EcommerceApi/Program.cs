@@ -43,7 +43,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Product API endpoints
-app.MapGet("/api/products", async (EcommerceDbContext db, string? search, string? category, decimal? minPrice, decimal? maxPrice, int page = 1, int limit = 10) =>
+app.MapGet("/api/products", async (EcommerceDbContext db, string? search, string? category, decimal? minPrice, decimal? maxPrice, int page = 1, int limit = 10, string? sortBy = "name", string? sortOrder = "asc") =>
 {
     var query = db.Products.Where(p => p.IsActive);
 
@@ -67,6 +67,15 @@ app.MapGet("/api/products", async (EcommerceDbContext db, string? search, string
         query = query.Where(p => p.Price <= maxPrice.Value);
     }
 
+    // Add sorting functionality
+    query = sortBy?.ToLower() switch
+    {
+        "price" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.Price) : query.OrderBy(p => p.Price),
+        "name" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
+        "category" => sortOrder?.ToLower() == "desc" ? query.OrderByDescending(p => p.Category) : query.OrderBy(p => p.Category),
+        _ => query.OrderBy(p => p.Name)
+    };
+
     var total = await query.CountAsync();
     var products = await query
         .Skip((page - 1) * limit)
@@ -84,7 +93,7 @@ app.MapGet("/api/products", async (EcommerceDbContext db, string? search, string
         })
         .ToListAsync();
 
-    return Results.Ok(new { products, total, page, limit });
+    return Results.Ok(new { products, total, page, limit, sortBy, sortOrder });
 })
 .WithName("GetProducts")
 .WithOpenApi();
@@ -111,6 +120,20 @@ app.MapGet("/api/products/{id}", async (int id, EcommerceDbContext db) =>
     return Results.Ok(productDto);
 })
 .WithName("GetProduct")
+.WithOpenApi();
+
+app.MapGet("/api/categories", async (EcommerceDbContext db) =>
+{
+    var categories = await db.Products
+        .Where(p => p.IsActive)
+        .Select(p => p.Category)
+        .Distinct()
+        .OrderBy(c => c)
+        .ToListAsync();
+
+    return Results.Ok(categories);
+})
+.WithName("GetCategories")
 .WithOpenApi();
 
 app.MapPost("/api/products", async (CreateProductDto createDto, EcommerceDbContext db) =>
@@ -244,6 +267,34 @@ app.MapDelete("/api/cart/{itemId}", async (int itemId, EcommerceDbContext db) =>
     return Results.Ok("Item removed from cart");
 })
 .WithName("RemoveFromCart")
+.WithOpenApi();
+
+app.MapGet("/api/cart/{userId}/count", async (string userId, EcommerceDbContext db) =>
+{
+    var count = await db.CartItems
+        .Where(c => c.UserId == userId)
+        .SumAsync(c => c.Quantity);
+    
+    return Results.Ok(new { count });
+})
+.WithName("GetCartCount")
+.WithOpenApi();
+
+app.MapDelete("/api/cart/{userId}/clear", async (string userId, EcommerceDbContext db) =>
+{
+    var cartItems = await db.CartItems
+        .Where(c => c.UserId == userId)
+        .ToListAsync();
+    
+    if (cartItems.Any())
+    {
+        db.CartItems.RemoveRange(cartItems);
+        await db.SaveChangesAsync();
+    }
+    
+    return Results.Ok("Cart cleared");
+})
+.WithName("ClearCart")
 .WithOpenApi();
 
 // Order API endpoints
