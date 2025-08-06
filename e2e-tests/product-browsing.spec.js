@@ -117,4 +117,95 @@ test.describe('Product Browsing', () => {
     const errorMessages = await page.locator('text="Error"').count();
     expect(errorMessages).toBe(0);
   });
+
+  test('should display enhanced 15-product catalog', async ({ page }) => {
+    // Wait for products to load
+    await page.waitForSelector('[data-testid^="product-card-"]');
+    
+    // Should display at least 10 products on first page (with pagination limit of 10)
+    const productCards = await page.locator('[data-testid^="product-card-"]').count();
+    expect(productCards).toBeGreaterThanOrEqual(10);
+    
+    // Check for diverse product categories
+    const categoryTexts = await page.locator('[data-testid^="product-card-"] [class*="category"]').allTextContents();
+    const uniqueCategories = [...new Set(categoryTexts)];
+    expect(uniqueCategories.length).toBeGreaterThanOrEqual(3); // At least 3 different categories visible
+  });
+
+  test('should support category filtering with new categories', async ({ page }) => {
+    // Wait for category filter to be available
+    await page.waitForSelector('select, [data-testid="category-filter"], .filter');
+    
+    // Try to filter by Electronics category
+    const categoryFilter = page.locator('select').first();
+    if (await categoryFilter.isVisible()) {
+      await categoryFilter.selectOption('Electronics');
+      
+      // Wait for results
+      await page.waitForTimeout(1000);
+      
+      // All visible products should be Electronics
+      const categories = await page.locator('[data-testid^="product-card-"] [class*="category"]').allTextContents();
+      const allElectronics = categories.every(cat => cat === 'Electronics');
+      expect(allElectronics).toBeTruthy();
+    }
+  });
+
+  test('should support enhanced sorting options', async ({ page }) => {
+    // Wait for sort controls
+    await page.waitForSelector('[data-testid^="product-card-"]');
+    
+    // Look for sort dropdown
+    const sortDropdown = page.locator('select').nth(1); // Assuming second select is sort
+    if (await sortDropdown.isVisible()) {
+      // Test sorting by price (low to high)
+      await sortDropdown.selectOption({ label: /price.*low/i });
+      await page.waitForTimeout(1000);
+      
+      // Get prices and verify they're in ascending order
+      const priceTexts = await page.locator('[data-testid^="product-card-"] [class*="price"]').allTextContents();
+      const prices = priceTexts.map(text => parseFloat(text.replace(/[^0-9.]/g, '')));
+      
+      if (prices.length > 1) {
+        for (let i = 0; i < prices.length - 1; i++) {
+          expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]);
+        }
+      }
+    }
+  });
+
+  test('should handle pricing range for diverse product catalog', async ({ page }) => {
+    // Wait for products to load
+    await page.waitForSelector('[data-testid^="product-card-"]');
+    
+    // Check that products have varied price ranges
+    const priceTexts = await page.locator('[data-testid^="product-card-"] [class*="price"]').allTextContents();
+    const prices = priceTexts.map(text => parseFloat(text.replace(/[^0-9.]/g, '')));
+    
+    // Should have products under $100 and over $100
+    const lowPriceProducts = prices.filter(price => price < 100);
+    const highPriceProducts = prices.filter(price => price >= 100);
+    
+    expect(lowPriceProducts.length).toBeGreaterThan(0);
+    expect(highPriceProducts.length).toBeGreaterThan(0);
+  });
+
+  test('should display quality product images from enhanced catalog', async ({ page }) => {
+    // Wait for products to load
+    await page.waitForSelector('[data-testid^="product-card-"]');
+    
+    // Check that product images are loading properly
+    const productImages = page.locator('[data-testid^="product-card-"] img');
+    const imageCount = await productImages.count();
+    
+    expect(imageCount).toBeGreaterThan(0);
+    
+    // Check first few images are actually loaded (not broken)
+    for (let i = 0; i < Math.min(3, imageCount); i++) {
+      const img = productImages.nth(i);
+      const src = await img.getAttribute('src');
+      expect(src).toBeTruthy();
+      expect(src).toContain('unsplash'); // Enhanced catalog uses Unsplash images
+    }
+  });
 });

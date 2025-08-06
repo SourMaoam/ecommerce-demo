@@ -195,4 +195,91 @@ public class CartApiTests : IClassFixture<TestWebApplicationFactory<Program>>
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GetCartCount_EmptyCart_ReturnsZero()
+    {
+        // Act
+        var response = await _client.GetAsync($"/api/cart/{_testUserId}/count");
+        
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<dynamic>();
+        
+        Assert.NotNull(result);
+        // Access count property from anonymous object
+        var countProperty = ((System.Text.Json.JsonElement)result).GetProperty("count");
+        Assert.Equal(0, countProperty.GetInt32());
+    }
+
+    [Fact]
+    public async Task GetCartCount_WithItems_ReturnsCorrectCount()
+    {
+        // Arrange - Add items to cart
+        var addRequest = new AddToCartDto 
+        { 
+            UserId = _testUserId, 
+            ProductId = 1, 
+            Quantity = 2 
+        };
+        await _client.PostAsJsonAsync("/api/cart/add", addRequest);
+
+        var addRequest2 = new AddToCartDto 
+        { 
+            UserId = _testUserId, 
+            ProductId = 2, 
+            Quantity = 3 
+        };
+        await _client.PostAsJsonAsync("/api/cart/add", addRequest2);
+
+        // Act
+        var response = await _client.GetAsync($"/api/cart/{_testUserId}/count");
+        
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<dynamic>();
+        
+        Assert.NotNull(result);
+        var countProperty = ((System.Text.Json.JsonElement)result).GetProperty("count");
+        Assert.Equal(5, countProperty.GetInt32()); // 2 + 3 = 5 total items
+    }
+
+    [Fact]
+    public async Task ClearCart_WithItems_RemovesAllItems()
+    {
+        // Arrange - Add items to cart
+        var addRequest = new AddToCartDto 
+        { 
+            UserId = _testUserId, 
+            ProductId = 1, 
+            Quantity = 2 
+        };
+        await _client.PostAsJsonAsync("/api/cart/add", addRequest);
+
+        // Verify cart has items
+        var cartResponse = await _client.GetAsync($"/api/cart/{_testUserId}");
+        var cart = await cartResponse.Content.ReadFromJsonAsync<CartDto>();
+        Assert.NotEmpty(cart!.Items);
+
+        // Act - Clear cart
+        var clearResponse = await _client.DeleteAsync($"/api/cart/{_testUserId}/clear");
+        
+        // Assert
+        clearResponse.EnsureSuccessStatusCode();
+        
+        // Verify cart is empty
+        var updatedCartResponse = await _client.GetAsync($"/api/cart/{_testUserId}");
+        var updatedCart = await updatedCartResponse.Content.ReadFromJsonAsync<CartDto>();
+        Assert.Empty(updatedCart!.Items);
+    }
+
+    [Fact]
+    public async Task ClearCart_EmptyCart_ReturnsSuccess()
+    {
+        // Act - Clear empty cart
+        var response = await _client.DeleteAsync($"/api/cart/{_testUserId}/clear");
+        
+        // Assert - Should still return success
+        response.EnsureSuccessStatusCode();
+    }
 }
