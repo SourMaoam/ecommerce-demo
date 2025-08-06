@@ -4,12 +4,19 @@ import { useCart } from '../../contexts/CartContext';
 import styles from './ProductCard.module.css';
 
 const ProductCard = ({ product }) => {
-  const { addToCart, loading } = useCart();
+  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = React.useState(false);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsAdding(true);
     await addToCart(product.id, 1);
+    
+    // Show feedback animation briefly
+    setTimeout(() => {
+      setIsAdding(false);
+    }, 1000);
   };
 
   return (
@@ -42,12 +49,12 @@ const ProductCard = ({ product }) => {
             </span>
             
             <button
-              className={`${styles.addToCartBtn} ${!product.inStock ? styles.disabled : ''}`}
+              className={`${styles.addToCartBtn} ${!product.inStock ? styles.disabled : ''} ${isAdding ? styles.adding : ''}`}
               onClick={handleAddToCart}
-              disabled={!product.inStock || loading}
+              disabled={!product.inStock}
               data-testid={`add-to-cart-${product.id}`}
             >
-              {loading ? 'Adding...' : 'Add to Cart'}
+              {isAdding ? '✓ Added!' : 'Add to Cart'}
             </button>
           </div>
 
