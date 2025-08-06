@@ -142,28 +142,35 @@ export const CartProvider = ({ children }) => {
   }, [userId, cart]);
 
   const clearCart = useCallback(async () => {
-    setLoading(true);
     setError(null);
+    const previousCart = cart;
+    
+    // Optimistic update - immediately clear cart
+    setCart({ items: [], total: 0 });
     
     try {
-      // Since there's no clear cart endpoint, remove all items individually
-      const removePromises = cart.items.map(item => 
-        apiService.removeFromCart(item.id)
-      );
-      await Promise.all(removePromises);
-      
-      // Set empty cart
-      setCart({ items: [], total: 0 });
+      // Use new clear cart endpoint
+      await apiService.clearCart(userId);
+      // Fetch updated cart to confirm
+      const cartResponse = await apiService.getCart(userId);
+      setCart(cartResponse.data);
     } catch (err) {
-      // For now, use local storage when API is not available
-      console.warn('API not available, using local storage', err);
+      // If API fails, keep optimistic update and save to localStorage
+      console.warn('API not available, keeping optimistic update in localStorage', err);
       clearLocalCart();
-      setCart({ items: [], total: 0 });
       setError(null);
-    } finally {
-      setLoading(false);
     }
-  }, [cart.items]);
+  }, [userId, cart]);
+
+  const getCartCount = useCallback(async () => {
+    try {
+      const response = await apiService.getCartCount(userId);
+      return response.data;
+    } catch (err) {
+      console.warn('Could not fetch cart count, using local cart', err);
+      return cart.items.reduce((total, item) => total + item.quantity, 0);
+    }
+  }, [userId, cart.items]);
 
   // Load cart on mount
   useEffect(() => {
@@ -182,6 +189,7 @@ export const CartProvider = ({ children }) => {
     updateQuantity,
     removeFromCart,
     clearCart,
+    getCartCount,
     fetchCart,
   };
 

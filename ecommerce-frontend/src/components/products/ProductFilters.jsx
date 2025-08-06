@@ -1,16 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiService } from '../../services/api';
 import styles from './ProductFilters.module.css';
 
 const ProductFilters = ({ filters, onFilterChange }) => {
-  const categories = [
-    'Electronics',
-    'Clothing',
-    'Home & Garden',
-    'Sports',
-    'Books',
-    'Toys',
-    'Beauty'
-  ];
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const response = await apiService.getCategories();
+        setCategories(response.data || []);
+      } catch (error) {
+        console.warn('Could not fetch categories, using fallback:', error);
+        // Fallback categories based on backend update
+        setCategories([
+          'Electronics',
+          'Home & Kitchen', 
+          'Sports & Fitness',
+          'Books & Media',
+          'Fashion & Accessories'
+        ]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleInputChange = (field, value) => {
     onFilterChange({ [field]: value });
@@ -57,13 +75,18 @@ const ProductFilters = ({ filters, onFilterChange }) => {
           value={filters.category}
           onChange={(e) => handleInputChange('category', e.target.value)}
           className={styles.select}
+          disabled={categoriesLoading}
         >
           <option value="">All Categories</option>
-          {categories.map(category => (
-            <option key={category} value={category.toLowerCase()}>
-              {category}
-            </option>
-          ))}
+          {categoriesLoading ? (
+            <option disabled>Loading categories...</option>
+          ) : (
+            categories.map(category => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))
+          )}
         </select>
       </div>
 
@@ -98,10 +121,12 @@ const ProductFilters = ({ filters, onFilterChange }) => {
           onChange={(e) => handleInputChange('sortBy', e.target.value)}
           className={styles.select}
         >
-          <option value="name">Name</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="newest">Newest First</option>
+          <option value="name">Name (A-Z)</option>
+          <option value="name_desc">Name (Z-A)</option>
+          <option value="price">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="category">Category</option>
+          <option value="category_desc">Category (Reverse)</option>
         </select>
       </div>
     </div>

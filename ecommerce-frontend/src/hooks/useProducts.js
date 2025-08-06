@@ -12,10 +12,21 @@ export const useProducts = () => {
     setError(null);
     
     try {
-      // Remove empty filters
+      // Remove empty filters and map sorting parameters to backend format
       const cleanedFilters = Object.entries(filters).reduce((acc, [key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
-          acc[key] = value;
+          // Map frontend sorting to backend parameters
+          if (key === 'sortBy') {
+            if (value.includes('_desc')) {
+              acc.sortBy = value.replace('_desc', '');
+              acc.sortOrder = 'desc';
+            } else {
+              acc.sortBy = value;
+              acc.sortOrder = 'asc';
+            }
+          } else {
+            acc[key] = value;
+          }
         }
         return acc;
       }, {});
