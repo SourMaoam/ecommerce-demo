@@ -93,7 +93,15 @@ app.MapGet("/api/products", async (EcommerceDbContext db, string? search, string
         })
         .ToListAsync();
 
-    return Results.Ok(new { products, total, page, limit, sortBy, sortOrder });
+    return Results.Ok(new ProductListResponse 
+    { 
+        Products = products, 
+        Total = total, 
+        Page = page, 
+        Limit = limit, 
+        SortBy = sortBy, 
+        SortOrder = sortOrder 
+    });
 })
 .WithName("GetProducts")
 .WithOpenApi();
@@ -179,6 +187,7 @@ app.MapGet("/api/cart/{userId}", async (string userId, EcommerceDbContext db) =>
             Id = c.Id,
             UserId = c.UserId,
             ProductId = c.ProductId,
+            ProductName = c.Product != null ? c.Product.Name : string.Empty,
             Product = c.Product != null ? new ProductDto
             {
                 Id = c.Product.Id,
@@ -275,7 +284,7 @@ app.MapGet("/api/cart/{userId}/count", async (string userId, EcommerceDbContext 
         .Where(c => c.UserId == userId)
         .SumAsync(c => c.Quantity);
     
-    return Results.Ok(new { count });
+    return Results.Ok(new CartCountResponse { Count = count });
 })
 .WithName("GetCartCount")
 .WithOpenApi();

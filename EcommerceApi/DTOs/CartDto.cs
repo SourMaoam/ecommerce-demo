@@ -40,3 +40,8 @@ public class UpdateCartItemRequest
 {
     public int Quantity { get; set; }
 }
+
+public class CartCountResponse
+{
+    public int Count { get; set; }
+}

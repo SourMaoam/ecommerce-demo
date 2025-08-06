@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mJbHDlA2OSo=",
+  "dgSpecHash": "rIL/B+nb8C4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\cn6640\\Desktop\\ecommerce-testing-dev\\EcommerceApi\\EcommerceApi.csproj",
+  "projectFilePath": "C:\\Users\\cn6640\\Desktop\\ecommerce-backend-dev\\EcommerceApi\\EcommerceApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\cn6640\\.nuget\\packages\\castle.core\\5.1.1\\castle.core.5.1.1.nupkg.sha512",
     "C:\\Users\\cn6640\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

@@ -37,8 +37,13 @@ public class CartApiTests : IClassFixture<TestWebApplicationFactory<Program>>
     {
         // Arrange - Get first product ID
         var productsResponse = await _client.GetAsync("/api/products");
+        productsResponse.EnsureSuccessStatusCode();
+        
         var products = await productsResponse.Content.ReadFromJsonAsync<ProductListResponse>();
-        var firstProductId = products!.Products[0].Id;
+        Assert.NotNull(products);
+        Assert.True(products.Products.Count > 0, "No products available for testing");
+        
+        var firstProductId = products.Products[0].Id;
         
         var addCartRequest = new AddToCartRequest
         {

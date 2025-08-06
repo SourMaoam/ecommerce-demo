@@ -45,6 +45,9 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
     private static void SeedTestData(EcommerceDbContext context)
     {
+        // Force add test products - clear any existing and add fresh ones
+        context.Products.RemoveRange(context.Products);
+        
         context.Products.AddRange(
             new Product
             {
@@ -58,9 +61,9 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             },
             new Product
             {
-                Name = "Test Phone",
+                Name = "Test Phone", 
                 Price = 699.99m,
-                Description = "Test phone description", 
+                Description = "Test phone description",
                 Category = "Electronics",
                 ImageUrl = "https://example.com/phone.jpg",
                 StockQuantity = 15,
