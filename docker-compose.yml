@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: ecommerce-api
+    ports:
+      - "5217:5217"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5217
+      - ConnectionStrings__DefaultConnection=InMemory
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5217/swagger"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.ecommerce.local`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=5217"
+
+  # Frontend React Service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ecommerce-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://backend:5217
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`ecommerce.local`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  # Reverse Proxy (Optional)
+  proxy:
+    image: traefik:v2.10
+    container_name: ecommerce-proxy
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+    profiles:
+      - proxy  # Only start when explicitly requested
+
+  # Database (Optional - for future expansion)
+  database:
+    image: postgres:15-alpine
+    container_name: ecommerce-db
+    environment:
+      - POSTGRES_DB=ecommerce
+      - POSTGRES_USER=ecommerce_user
+      - POSTGRES_PASSWORD=secure_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommerce_user -d ecommerce"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    profiles:
+      - database  # Only start when explicitly requested
+
+  # Redis Cache (Optional - for future expansion)
+  cache:
+    image: redis:7-alpine
+    container_name: ecommerce-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - cache  # Only start when explicitly requested
+
+networks:
+  ecommerce-network:
+    driver: bridge
+    name: ecommerce-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# Development override example
+# Create docker-compose.override.yml for local development:
+#
+# version: '3.8'
+# services:
+#   backend:
+#     volumes:
+#       - ./EcommerceApi:/app/source
+#     environment:
+#       - ASPNETCORE_ENVIRONMENT=Development
+#   frontend:
+#     volumes:
+#       - ./ecommerce-frontend/src:/app/src
+#     environment:
+#       - CHOKIDAR_USEPOLLING=true
