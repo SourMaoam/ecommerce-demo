@@ -33,3 +33,11 @@ public class CreateOrderDto
     public string PaymentMethod { get; set; } = string.Empty;
     public List<int> CartItemIds { get; set; } = new();
 }
+
+public class CreateOrderRequest
+{
+    public string UserId { get; set; } = string.Empty;
+    public string ShippingAddress { get; set; } = string.Empty;
+    public string PaymentMethod { get; set; } = string.Empty;
+    public List<int> CartItemIds { get; set; } = new();
+}

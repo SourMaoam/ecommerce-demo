@@ -43,3 +43,11 @@ public class ProductSearchDto
     public int Page { get; set; } = 1;
     public int Limit { get; set; } = 10;
 }
+
+public class ProductListResponse
+{
+    public List<ProductDto> Products { get; set; } = new();
+    public int Total { get; set; }
+    public int Page { get; set; }
+    public int Limit { get; set; }
+}

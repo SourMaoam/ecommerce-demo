@@ -1,0 +1,20 @@
+{
+  "name": "ecommerce-testing-dev",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:backend": "cd EcommerceApi && dotnet test",
+    "test:frontend": "cd ecommerce-frontend && npm test -- --watchAll=false",
+    "test:all": "npm run test:backend && npm run test:frontend && npm run test:e2e"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.54.2"
+  }
+}
