@@ -56,64 +56,79 @@ function Test-Prerequisites {
 function Build-Backend {
     Write-ColorOutput "🏗️ Building Backend API (.NET)..." $Cyan
     
-    Set-Location "EcommerceApi"
-    
-    if ($Clean) {
-        Write-ColorOutput "🧹 Cleaning backend..." $Yellow
-        dotnet clean --configuration $Configuration
-    }
-    
-    Write-ColorOutput "📦 Restoring backend packages..." $Yellow
-    dotnet restore
-    
-    Write-ColorOutput "🔨 Building backend..." $Yellow
-    dotnet build --configuration $Configuration --no-restore
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput "❌ Backend build failed!" $Red
-        Set-Location ".."
+    if (!(Test-Path "EcommerceApi/EcommerceApi.csproj")) {
+        Write-ColorOutput "❌ Backend project not found at EcommerceApi/EcommerceApi.csproj" $Red
         exit 1
     }
     
-    Write-ColorOutput "✅ Backend build completed successfully!" $Green
-    Set-Location ".."
+    try {
+        Set-Location "EcommerceApi"
+        
+        if ($Clean) {
+            Write-ColorOutput "🧹 Cleaning backend..." $Yellow
+            dotnet clean --configuration $Configuration
+        }
+        
+        Write-ColorOutput "📦 Restoring backend packages..." $Yellow
+        dotnet restore
+        
+        Write-ColorOutput "🔨 Building backend..." $Yellow
+        dotnet build --configuration $Configuration --no-restore
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-ColorOutput "❌ Backend build failed!" $Red
+            throw "Backend build failed with exit code $LASTEXITCODE"
+        }
+        
+        Write-ColorOutput "✅ Backend build completed successfully!" $Green
+    }
+    finally {
+        Set-Location ".."
+    }
 }
 
 function Build-Frontend {
     Write-ColorOutput "🏗️ Building Frontend React App..." $Cyan
     
-    Set-Location "ecommerce-frontend"
-    
-    if ($Clean -and (Test-Path "build")) {
-        Write-ColorOutput "🧹 Cleaning frontend build directory..." $Yellow
-        Remove-Item -Recurse -Force "build"
-    }
-    
-    if ($Clean -and (Test-Path "node_modules")) {
-        Write-ColorOutput "🧹 Cleaning node_modules..." $Yellow
-        Remove-Item -Recurse -Force "node_modules"
-    }
-    
-    Write-ColorOutput "📦 Installing frontend dependencies..." $Yellow
-    npm install
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput "❌ npm install failed!" $Red
-        Set-Location ".."
+    if (!(Test-Path "ecommerce-frontend/package.json")) {
+        Write-ColorOutput "❌ Frontend project not found at ecommerce-frontend/package.json" $Red
         exit 1
     }
     
-    Write-ColorOutput "🔨 Building frontend for production..." $Yellow
-    npm run build
-    
-    if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput "❌ Frontend build failed!" $Red
-        Set-Location ".."
-        exit 1
+    try {
+        Set-Location "ecommerce-frontend"
+        
+        if ($Clean -and (Test-Path "build")) {
+            Write-ColorOutput "🧹 Cleaning frontend build directory..." $Yellow
+            Remove-Item -Recurse -Force "build"
+        }
+        
+        if ($Clean -and (Test-Path "node_modules")) {
+            Write-ColorOutput "🧹 Cleaning node_modules..." $Yellow
+            Remove-Item -Recurse -Force "node_modules"
+        }
+        
+        Write-ColorOutput "📦 Installing frontend dependencies..." $Yellow
+        npm install
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-ColorOutput "❌ npm install failed!" $Red
+            throw "npm install failed with exit code $LASTEXITCODE"
+        }
+        
+        Write-ColorOutput "🔨 Building frontend for production..." $Yellow
+        npm run build
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-ColorOutput "❌ Frontend build failed!" $Red
+            throw "Frontend build failed with exit code $LASTEXITCODE"
+        }
+        
+        Write-ColorOutput "✅ Frontend build completed successfully!" $Green
     }
-    
-    Write-ColorOutput "✅ Frontend build completed successfully!" $Green
-    Set-Location ".."
+    finally {
+        Set-Location ".."
+    }
 }
 
 function Show-BuildSummary {
@@ -140,8 +155,16 @@ function Show-BuildSummary {
 try {
     $startTime = Get-Date
     Write-ColorOutput "🚀 Starting E-commerce Application Build Process..." $Cyan
+    Write-ColorOutput "Working Directory: $(Get-Location)" $Yellow
     Write-ColorOutput "Configuration: $Configuration, Clean: $Clean" $Yellow
     Write-ColorOutput "Started at: $($startTime.ToString('yyyy-MM-dd HH:mm:ss'))`n" $Yellow
+    
+    # Validate we're in the correct directory
+    if (!(Test-Path "EcommerceApi") -and !(Test-Path "ecommerce-frontend")) {
+        Write-ColorOutput "❌ Not in project root directory. Expected to find EcommerceApi and ecommerce-frontend folders." $Red
+        Write-ColorOutput "💡 Navigate to the project root directory and try again." $Yellow
+        exit 1
+    }
     
     Test-Prerequisites
     Build-Backend
@@ -154,5 +177,7 @@ try {
 }
 catch {
     Write-ColorOutput "`n❌ Build failed with error: $($_.Exception.Message)" $Red
+    Write-ColorOutput "💡 Check the error messages above for details" $Yellow
+    Write-ColorOutput "💡 Ensure you're in the project root directory" $Cyan
     exit 1
 }
