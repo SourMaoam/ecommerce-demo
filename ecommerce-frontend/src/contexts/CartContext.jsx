@@ -38,100 +38,139 @@ export const CartProvider = ({ children }) => {
   }, [userId]);
 
   const addToCart = useCallback(async (productId, quantity = 1) => {
-    setLoading(true);
     setError(null);
     
+    // Optimistic update - immediately add to UI
+    const mockProduct = getMockProduct(productId);
+    if (mockProduct) {
+      setCart(prevCart => {
+        const existingItem = prevCart.items.find(item => item.productId === productId);
+        let newItems;
+        
+        if (existingItem) {
+          newItems = prevCart.items.map(item => 
+            item.productId === productId 
+              ? { ...item, quantity: item.quantity + quantity }
+              : item
+          );
+        } else {
+          const newItem = {
+            id: Date.now(),
+            productId,
+            quantity,
+            product: mockProduct
+          };
+          newItems = [...prevCart.items, newItem];
+        }
+        
+        const newTotal = newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+        return { items: newItems, total: newTotal };
+      });
+    }
+    
     try {
-      // Add item to cart
+      // Try to sync with backend
       await apiService.addToCart({
         userId,
         productId,
         quantity
       });
-      // Fetch updated cart after adding item
+      
+      // If successful, fetch the real cart state
       const cartResponse = await apiService.getCart(userId);
       setCart(cartResponse.data);
     } catch (err) {
-      // For now, use local storage when API is not available
-      console.warn('API not available, using local storage', err);
+      // If API fails, keep the optimistic update and save to localStorage
+      console.warn('API not available, keeping optimistic update in localStorage', err);
       addToLocalCart(productId, quantity);
-      const localCart = getCartFromLocalStorage();
-      setCart(localCart);
       setError(null);
-    } finally {
-      setLoading(false);
     }
   }, [userId]);
 
   const updateQuantity = useCallback(async (itemId, quantity) => {
     if (quantity < 1) return;
     
-    setLoading(true);
     setError(null);
+    const previousCart = cart;
+    
+    // Optimistic update - immediately update UI
+    setCart(prevCart => {
+      const newItems = prevCart.items.map(item => 
+        item.id === parseInt(itemId) 
+          ? { ...item, quantity }
+          : item
+      );
+      const newTotal = newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      return { items: newItems, total: newTotal };
+    });
     
     try {
-      // Update cart item quantity
+      // Try to sync with backend
       await apiService.updateCartItem(itemId, { quantity });
-      // Fetch updated cart after updating
       const cartResponse = await apiService.getCart(userId);
       setCart(cartResponse.data);
     } catch (err) {
-      // For now, use local storage when API is not available
-      console.warn('API not available, using local storage', err);
+      // If API fails, keep optimistic update and save to localStorage
+      console.warn('API not available, keeping optimistic update in localStorage', err);
       updateLocalCartItem(itemId, quantity);
-      const localCart = getCartFromLocalStorage();
-      setCart(localCart);
       setError(null);
-    } finally {
-      setLoading(false);
     }
-  }, [userId]);
+  }, [userId, cart]);
 
   const removeFromCart = useCallback(async (itemId) => {
-    setLoading(true);
     setError(null);
+    const previousCart = cart;
+    
+    // Optimistic update - immediately remove from UI
+    setCart(prevCart => {
+      const newItems = prevCart.items.filter(item => item.id !== parseInt(itemId));
+      const newTotal = newItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      return { items: newItems, total: newTotal };
+    });
     
     try {
-      // Remove item from cart
+      // Try to sync with backend
       await apiService.removeFromCart(itemId);
-      // Fetch updated cart after removing
       const cartResponse = await apiService.getCart(userId);
       setCart(cartResponse.data);
     } catch (err) {
-      // For now, use local storage when API is not available
-      console.warn('API not available, using local storage', err);
+      // If API fails, keep optimistic update and save to localStorage
+      console.warn('API not available, keeping optimistic update in localStorage', err);
       removeFromLocalCart(itemId);
-      const localCart = getCartFromLocalStorage();
-      setCart(localCart);
       setError(null);
-    } finally {
-      setLoading(false);
     }
-  }, [userId]);
+  }, [userId, cart]);
 
   const clearCart = useCallback(async () => {
-    setLoading(true);
     setError(null);
+    const previousCart = cart;
+    
+    // Optimistic update - immediately clear cart
+    setCart({ items: [], total: 0 });
     
     try {
-      // Since there's no clear cart endpoint, remove all items individually
-      const removePromises = cart.items.map(item => 
-        apiService.removeFromCart(item.id)
-      );
-      await Promise.all(removePromises);
-      
-      // Set empty cart
-      setCart({ items: [], total: 0 });
+      // Use new clear cart endpoint
+      await apiService.clearCart(userId);
+      // Fetch updated cart to confirm
+      const cartResponse = await apiService.getCart(userId);
+      setCart(cartResponse.data);
     } catch (err) {
-      // For now, use local storage when API is not available
-      console.warn('API not available, using local storage', err);
+      // If API fails, keep optimistic update and save to localStorage
+      console.warn('API not available, keeping optimistic update in localStorage', err);
       clearLocalCart();
-      setCart({ items: [], total: 0 });
       setError(null);
-    } finally {
-      setLoading(false);
     }
-  }, [cart.items]);
+  }, [userId, cart]);
+
+  const getCartCount = useCallback(async () => {
+    try {
+      const response = await apiService.getCartCount(userId);
+      return response.data;
+    } catch (err) {
+      console.warn('Could not fetch cart count, using local cart', err);
+      return cart.items.reduce((total, item) => total + item.quantity, 0);
+    }
+  }, [userId, cart.items]);
 
   // Load cart on mount
   useEffect(() => {
@@ -150,6 +189,7 @@ export const CartProvider = ({ children }) => {
     updateQuantity,
     removeFromCart,
     clearCart,
+    getCartCount,
     fetchCart,
   };
 

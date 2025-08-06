@@ -52,9 +52,18 @@ export const apiService = {
     return api.get(`/products/${id}`);
   },
 
+  // Categories
+  getCategories: () => {
+    return api.get('/categories');
+  },
+
   // Cart
   getCart: (userId) => {
     return api.get(`/cart/${userId}`);
+  },
+
+  getCartCount: (userId) => {
+    return api.get(`/cart/${userId}/count`);
   },
 
   addToCart: (data) => {
@@ -70,7 +79,7 @@ export const apiService = {
   },
 
   clearCart: (userId) => {
-    return api.delete(`/cart/clear/${userId}`);
+    return api.delete(`/cart/${userId}/clear`);
   },
 
   // Orders
