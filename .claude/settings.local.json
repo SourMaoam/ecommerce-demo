@@ -11,7 +11,18 @@
       "Bash(dotnet run:*)",
       "Bash(curl:*)",
       "Bash(rm:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(mkdir:*)",
+      "Bash(dotnet build)",
+      "Bash(dotnet test:*)",
+      "Bash(npm test:*)",
+      "Bash(npm install)",
+      "Bash(rm:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

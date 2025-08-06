@@ -344,3 +344,6 @@ app.MapGet("/api/orders/{userId}", async (string userId, EcommerceDbContext db) 
 .WithOpenApi();
 
 app.Run();
+
+// Make Program accessible to tests
+public partial class Program { }
