@@ -11,7 +11,8 @@
       "Bash(dotnet run:*)",
       "Bash(curl:*)",
       "Bash(rm:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
