@@ -30,8 +30,8 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
         var products = await response.Content.ReadFromJsonAsync<ProductListResponse>();
         
         Assert.NotNull(products);
-        Assert.True(products.Products.Count >= 3);
-        Assert.True(products.Total >= 3);
+        Assert.True(products.Products.Count >= 10); // Default limit is 10, total products is 15
+        Assert.True(products.Total >= 15); // Updated for 15-product catalog
         Assert.Equal(1, products.Page);
         Assert.Equal(10, products.Limit);
     }
@@ -62,7 +62,7 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
         var products = await response.Content.ReadFromJsonAsync<ProductListResponse>();
         
         Assert.NotNull(products);
-        Assert.True(products.Products.Count >= 2);
+        Assert.True(products.Products.Count >= 6); // Updated for 15-product catalog - Electronics has 7 products
         Assert.All(products.Products, p => Assert.Equal("Electronics", p.Category));
     }
 
@@ -103,10 +103,12 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
     [Fact]
     public async Task GetProduct_WithValidId_ReturnsProduct()
     {
-        // Arrange - Get the first product ID
+        // Arrange - Get the first product ID and expected name
         var allProductsResponse = await _client.GetAsync("/api/products");
         var allProducts = await allProductsResponse.Content.ReadFromJsonAsync<ProductListResponse>();
-        var firstProductId = allProducts!.Products[0].Id;
+        var firstProduct = allProducts!.Products[0];
+        var firstProductId = firstProduct.Id;
+        var expectedName = firstProduct.Name;
 
         // Act
         var response = await _client.GetAsync($"/api/products/{firstProductId}");
@@ -117,7 +119,7 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
         
         Assert.NotNull(product);
         Assert.Equal(firstProductId, product.Id);
-        Assert.Equal("Test Laptop", product.Name);
+        Assert.Equal(expectedName, product.Name);
     }
 
     [Fact]
@@ -174,5 +176,56 @@ public class ProductsApiTests : IClassFixture<TestWebApplicationFactory<Program>
         
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCategories_ReturnsAvailableCategories()
+    {
+        // Act
+        var response = await _client.GetAsync("/api/categories");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var categories = await response.Content.ReadFromJsonAsync<List<string>>();
+
+        Assert.NotNull(categories);
+        Assert.Contains("Electronics", categories);
+        Assert.Contains("Home & Kitchen", categories);
+        Assert.Contains("Sports & Fitness", categories);
+        Assert.Contains("Books & Media", categories);
+        Assert.Contains("Fashion & Accessories", categories);
+        Assert.True(categories.Count >= 5); // At least 5 categories in new catalog
+    }
+
+    [Fact]
+    public async Task GetProducts_WithSorting_ReturnsSortedProducts()
+    {
+        // Test sorting by price ascending
+        var response = await _client.GetAsync("/api/products?sortBy=price&sortOrder=asc");
+        response.EnsureSuccessStatusCode();
+        var products = await response.Content.ReadFromJsonAsync<ProductListResponse>();
+        
+        Assert.NotNull(products);
+        Assert.True(products.Products.Count >= 2);
+        
+        // Verify ascending price order
+        for (int i = 0; i < products.Products.Count - 1; i++)
+        {
+            Assert.True(products.Products[i].Price <= products.Products[i + 1].Price);
+        }
+
+        // Test sorting by price descending
+        response = await _client.GetAsync("/api/products?sortBy=price&sortOrder=desc");
+        response.EnsureSuccessStatusCode();
+        products = await response.Content.ReadFromJsonAsync<ProductListResponse>();
+        
+        Assert.NotNull(products);
+        Assert.True(products.Products.Count >= 2);
+        
+        // Verify descending price order
+        for (int i = 0; i < products.Products.Count - 1; i++)
+        {
+            Assert.True(products.Products[i].Price >= products.Products[i + 1].Price);
+        }
     }
 }

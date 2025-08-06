@@ -93,7 +93,15 @@ app.MapGet("/api/products", async (EcommerceDbContext db, string? search, string
         })
         .ToListAsync();
 
-    return Results.Ok(new { products, total, page, limit, sortBy, sortOrder });
+    return Results.Ok(new ProductListResponse 
+    { 
+        Products = products, 
+        Total = total, 
+        Page = page, 
+        Limit = limit, 
+        SortBy = sortBy, 
+        SortOrder = sortOrder 
+    });
 })
 .WithName("GetProducts")
 .WithOpenApi();
@@ -138,6 +146,22 @@ app.MapGet("/api/categories", async (EcommerceDbContext db) =>
 
 app.MapPost("/api/products", async (CreateProductDto createDto, EcommerceDbContext db) =>
 {
+    // Manual validation for Data Annotations
+    if (string.IsNullOrWhiteSpace(createDto.Name))
+        return Results.BadRequest(new { error = "Name is required" });
+        
+    if (string.IsNullOrWhiteSpace(createDto.Description))
+        return Results.BadRequest(new { error = "Description is required" });
+        
+    if (string.IsNullOrWhiteSpace(createDto.Category))
+        return Results.BadRequest(new { error = "Category is required" });
+        
+    if (createDto.Price <= 0)
+        return Results.BadRequest(new { error = "Price must be greater than 0" });
+        
+    if (createDto.StockQuantity < 0)
+        return Results.BadRequest(new { error = "Stock quantity cannot be negative" });
+
     var product = new Product
     {
         Name = createDto.Name,
@@ -179,6 +203,7 @@ app.MapGet("/api/cart/{userId}", async (string userId, EcommerceDbContext db) =>
             Id = c.Id,
             UserId = c.UserId,
             ProductId = c.ProductId,
+            ProductName = c.Product != null ? c.Product.Name : string.Empty,
             Product = c.Product != null ? new ProductDto
             {
                 Id = c.Product.Id,
@@ -275,7 +300,7 @@ app.MapGet("/api/cart/{userId}/count", async (string userId, EcommerceDbContext 
         .Where(c => c.UserId == userId)
         .SumAsync(c => c.Quantity);
     
-    return Results.Ok(new { count });
+    return Results.Ok(new CartCountResponse { Count = count });
 })
 .WithName("GetCartCount")
 .WithOpenApi();

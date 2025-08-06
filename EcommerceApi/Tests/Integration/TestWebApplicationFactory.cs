@@ -19,10 +19,10 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             if (descriptor != null)
                 services.Remove(descriptor);
 
-            // Add a test database
+            // Use a shared database name for this test class to ensure data consistency
             services.AddDbContext<EcommerceDbContext>(options =>
             {
-                options.UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}");
+                options.UseInMemoryDatabase("SharedTestDb");
             });
 
             // Build the service provider
@@ -45,39 +45,12 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
     private static void SeedTestData(EcommerceDbContext context)
     {
-        context.Products.AddRange(
-            new Product
-            {
-                Name = "Test Laptop",
-                Price = 999.99m,
-                Description = "Test laptop description",
-                Category = "Electronics",
-                ImageUrl = "https://example.com/laptop.jpg",
-                StockQuantity = 10,
-                IsActive = true
-            },
-            new Product
-            {
-                Name = "Test Phone",
-                Price = 699.99m,
-                Description = "Test phone description", 
-                Category = "Electronics",
-                ImageUrl = "https://example.com/phone.jpg",
-                StockQuantity = 15,
-                IsActive = true
-            },
-            new Product
-            {
-                Name = "Test Coffee Maker",
-                Price = 79.99m,
-                Description = "Test coffee maker description",
-                Category = "Appliances",
-                ImageUrl = "https://example.com/coffee.jpg",
-                StockQuantity = 5,
-                IsActive = true
-            }
-        );
-
-        context.SaveChanges();
+        // Let the main OnModelCreating handle seeding
+        // Just verify that products are available
+        if (!context.Products.Any())
+        {
+            // This should not happen if OnModelCreating is working properly
+            throw new InvalidOperationException("No products found in test database after initialization");
+        }
     }
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace EcommerceApi.DTOs;
 
 public class ProductDto
@@ -15,11 +17,24 @@ public class ProductDto
 
 public class CreateProductDto
 {
+    [Required]
+    [StringLength(200)]
     public string Name { get; set; } = string.Empty;
+    
+    [Required]
     public string Description { get; set; } = string.Empty;
+    
+    [Required]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
     public decimal Price { get; set; }
+    
+    [Required]
+    [StringLength(100)]
     public string Category { get; set; } = string.Empty;
+    
     public string ImageUrl { get; set; } = string.Empty;
+    
+    [Range(0, int.MaxValue)]
     public int StockQuantity { get; set; }
 }
 
@@ -50,4 +65,6 @@ public class ProductListResponse
     public int Total { get; set; }
     public int Page { get; set; }
     public int Limit { get; set; }
+    public string? SortBy { get; set; }
+    public string? SortOrder { get; set; }
 }

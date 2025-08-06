@@ -1,6 +1,7 @@
 {
   "format": 1,
   "restore": {
+<<<<<<< HEAD
     "C:\\Users\\cn6640\\Desktop\\ecommerce-demo\\EcommerceApi\\EcommerceApi.csproj": {}
   },
   "projects": {
@@ -12,6 +13,19 @@
         "projectPath": "C:\\Users\\cn6640\\Desktop\\ecommerce-demo\\EcommerceApi\\EcommerceApi.csproj",
         "packagesPath": "C:\\Users\\cn6640\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\cn6640\\Desktop\\ecommerce-demo\\EcommerceApi\\obj\\",
+=======
+    "C:\\Users\\cn6640\\Desktop\\ecommerce-backend-dev\\EcommerceApi\\EcommerceApi.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\cn6640\\Desktop\\ecommerce-backend-dev\\EcommerceApi\\EcommerceApi.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\cn6640\\Desktop\\ecommerce-backend-dev\\EcommerceApi\\EcommerceApi.csproj",
+        "projectName": "EcommerceApi",
+        "projectPath": "C:\\Users\\cn6640\\Desktop\\ecommerce-backend-dev\\EcommerceApi\\EcommerceApi.csproj",
+        "packagesPath": "C:\\Users\\cn6640\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\cn6640\\Desktop\\ecommerce-backend-dev\\EcommerceApi\\obj\\",
+>>>>>>> origin/backend-dev
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
