@@ -1,0 +1,98 @@
+# Frontend Dockerfile for E-commerce React App
+# Multi-stage build for optimized production image
+
+# Build stage
+FROM node:18-alpine AS build
+WORKDIR /app
+
+# Install dependencies first (for better caching)
+COPY ecommerce-frontend/package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code and build
+COPY ecommerce-frontend/ ./
+RUN npm run build
+
+# Production stage with nginx
+FROM nginx:alpine AS production
+
+# Remove default nginx config
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
+# Copy custom nginx configuration
+COPY <<EOF /etc/nginx/conf.d/default.conf
+server {
+    listen 80;
+    server_name localhost;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    
+    # Root directory for React app
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+    
+    # Handle React Router (SPA routing)
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+    
+    # API proxy to backend (if running in same environment)
+    location /api/ {
+        proxy_pass http://backend:5217/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+    
+    # Static assets caching
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    
+    # Security: prevent access to hidden files
+    location ~ /\. {
+        deny all;
+    }
+    
+    # Gzip compression
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+}
+EOF
+
+# Copy built React app
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Create nginx user and set permissions
+RUN addgroup -g 1001 -S appuser && \
+    adduser -S appuser -G appuser && \
+    chown -R appuser:appuser /usr/share/nginx/html && \
+    chown -R appuser:appuser /var/cache/nginx && \
+    chown -R appuser:appuser /var/log/nginx && \
+    chown -R appuser:appuser /etc/nginx/conf.d
+
+# Switch to non-root user
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:80 || exit 1
+
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
