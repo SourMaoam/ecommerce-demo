@@ -114,7 +114,7 @@ export const CartProvider = ({ children }) => {
       updateLocalCartItem(itemId, quantity);
       setError(null);
     }
-  }, [userId, cart]);
+  }, [userId]);
 
   const removeFromCart = useCallback(async (itemId) => {
     setError(null);
@@ -137,7 +137,7 @@ export const CartProvider = ({ children }) => {
       removeFromLocalCart(itemId);
       setError(null);
     }
-  }, [userId, cart]);
+  }, [userId]);
 
   const clearCart = useCallback(async () => {
     setError(null);
@@ -157,7 +157,7 @@ export const CartProvider = ({ children }) => {
       clearLocalCart();
       setError(null);
     }
-  }, [userId, cart]);
+  }, [userId]);
 
   const getCartCount = useCallback(async () => {
     try {

@@ -25,6 +25,13 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         
+    - name: 🧹 Clean corrupted cache files
+      run: |
+        # Remove potentially corrupted cache files that might exist from previous runs
+        rm -rf EcommerceApi/obj/project.assets.json
+        rm -rf EcommerceApi/obj/project.nuget.cache
+        rm -rf EcommerceApi/obj/*.json
+        
     - name: 📦 Restore dependencies
       run: dotnet restore EcommerceApi/EcommerceApi.csproj
       
