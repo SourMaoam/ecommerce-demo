@@ -274,12 +274,35 @@ jobs:
         
     - name: 🧪 Run end-to-end tests (if available)
       run: |
-        if [ -d "e2e-tests" ]; then
-          cd e2e-tests
+        if [ -d "e2e-tests" ] && [ -f "package.json" ]; then
+          echo "🎭 Installing Playwright and dependencies..."
           npm install
-          npm run test
+          npx playwright install --with-deps chromium
+          
+          echo "🎭 Starting frontend for E2E tests..."
+          cd ecommerce-frontend
+          nohup npm start > ../frontend-e2e.log 2>&1 &
+          FRONTEND_PID=$!
+          cd ..
+          
+          # Wait for frontend to be ready
+          echo "Waiting for frontend to start..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000 >/dev/null 2>&1; then
+              echo "✅ Frontend is ready for E2E tests!"
+              break
+            fi
+            echo "Waiting for frontend... (attempt $i/30)"
+            sleep 3
+          done
+          
+          echo "🎭 Running E2E tests with Playwright..."
+          npm run test:e2e -- --reporter=line
+          
+          # Cleanup
+          kill $FRONTEND_PID || true
         else
-          echo "⚠️ No E2E tests found - placeholder for future implementation"
+          echo "⚠️ No E2E tests found or package.json missing - skipping E2E tests"
         fi
 
   # Job 5: Deploy to Staging (only on main branch)

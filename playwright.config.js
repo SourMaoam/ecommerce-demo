@@ -63,18 +63,18 @@ module.exports = defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: [
+  /* Run your local dev server before starting the tests (only when not in CI) */
+  webServer: process.env.CI ? [] : [
     {
       command: 'cd ecommerce-frontend && npm start',
       url: 'http://localhost:3000',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 60 * 1000,
     },
     {
       command: 'cd EcommerceApi && dotnet run',
       url: 'http://localhost:5217',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
       timeout: 60 * 1000,
     }
   ],
