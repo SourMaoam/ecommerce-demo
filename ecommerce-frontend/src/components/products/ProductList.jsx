@@ -25,7 +25,8 @@ const ProductList = () => {
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [filters]); // Removed fetchProducts dependency to prevent infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]); // fetchProducts excluded from deps to prevent infinite loop
 
   const handleFilterChange = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
