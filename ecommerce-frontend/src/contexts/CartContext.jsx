@@ -91,7 +91,6 @@ export const CartProvider = ({ children }) => {
     if (quantity < 1) return;
     
     setError(null);
-    const previousCart = cart;
     
     // Optimistic update - immediately update UI
     setCart(prevCart => {
@@ -115,11 +114,10 @@ export const CartProvider = ({ children }) => {
       updateLocalCartItem(itemId, quantity);
       setError(null);
     }
-  }, [userId, cart]);
+  }, [userId]);
 
   const removeFromCart = useCallback(async (itemId) => {
     setError(null);
-    const previousCart = cart;
     
     // Optimistic update - immediately remove from UI
     setCart(prevCart => {
@@ -139,11 +137,10 @@ export const CartProvider = ({ children }) => {
       removeFromLocalCart(itemId);
       setError(null);
     }
-  }, [userId, cart]);
+  }, [userId]);
 
   const clearCart = useCallback(async () => {
     setError(null);
-    const previousCart = cart;
     
     // Optimistic update - immediately clear cart
     setCart({ items: [], total: 0 });
@@ -160,7 +157,7 @@ export const CartProvider = ({ children }) => {
       clearLocalCart();
       setError(null);
     }
-  }, [userId, cart]);
+  }, [userId]);
 
   const getCartCount = useCallback(async () => {
     try {

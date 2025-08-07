@@ -25,6 +25,13 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         
+    - name: 🧹 Clean corrupted cache files
+      run: |
+        # Remove potentially corrupted cache files that might exist from previous runs
+        rm -rf EcommerceApi/obj/project.assets.json
+        rm -rf EcommerceApi/obj/project.nuget.cache
+        rm -rf EcommerceApi/obj/*.json
+        
     - name: 📦 Restore dependencies
       run: dotnet restore EcommerceApi/EcommerceApi.csproj
       
@@ -33,8 +40,8 @@ jobs:
       
     - name: 🧪 Run backend tests
       run: |
-        if [ -d "EcommerceApi.Tests" ]; then
-          dotnet test EcommerceApi.Tests/EcommerceApi.Tests.csproj --configuration Release --no-build --verbosity normal --logger trx --results-directory TestResults
+        if [ -d "EcommerceApi/Tests" ]; then
+          dotnet test EcommerceApi/EcommerceApi.csproj --configuration Release --no-build --verbosity normal --logger trx --results-directory TestResults
         else
           echo "⚠️ No backend tests found - creating placeholder"
           mkdir -p TestResults
