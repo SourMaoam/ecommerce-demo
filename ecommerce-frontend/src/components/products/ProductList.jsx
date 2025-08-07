@@ -25,7 +25,7 @@ const ProductList = () => {
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [filters, fetchProducts]);
+  }, [filters]); // Removed fetchProducts dependency to prevent infinite loop
 
   const handleFilterChange = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));

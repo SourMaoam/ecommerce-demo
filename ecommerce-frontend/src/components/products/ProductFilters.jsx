@@ -49,6 +49,7 @@ const ProductFilters = ({ filters, onFilterChange }) => {
       <div className={styles.filterHeader}>
         <h3>Filters</h3>
         <button 
+          type="button"
           className={styles.clearButton}
           onClick={handleClearFilters}
         >
@@ -65,6 +66,7 @@ const ProductFilters = ({ filters, onFilterChange }) => {
           onChange={(e) => handleInputChange('search', e.target.value)}
           placeholder="Search products..."
           className={styles.input}
+          autoComplete="off"
         />
       </div>
 
