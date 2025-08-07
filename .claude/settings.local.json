@@ -32,7 +32,11 @@
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
       "Bash(find:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(git merge:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker:*)",
+      "Bash(docker compose:*)"
     ],
     "deny": []
   }

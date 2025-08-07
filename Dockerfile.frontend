@@ -16,8 +16,8 @@ RUN npm run build
 # Production stage with nginx
 FROM nginx:alpine AS production
 
-# Remove default nginx config
-RUN rm -rf /etc/nginx/conf.d/default.conf
+# Install curl for health checks and remove default nginx config
+RUN apk add --no-cache curl && rm -rf /etc/nginx/conf.d/default.conf
 
 # Copy custom nginx configuration
 COPY <<EOF /etc/nginx/conf.d/default.conf
@@ -81,12 +81,11 @@ COPY --from=build /app/build /usr/share/nginx/html
 RUN addgroup -g 1001 -S appuser && \
     adduser -S appuser -G appuser && \
     chown -R appuser:appuser /usr/share/nginx/html && \
-    chown -R appuser:appuser /var/cache/nginx && \
-    chown -R appuser:appuser /var/log/nginx && \
-    chown -R appuser:appuser /etc/nginx/conf.d
+    chmod -R 755 /usr/share/nginx/html
 
-# Switch to non-root user
-USER appuser
+# Note: Running nginx as non-root requires additional configuration
+# For production, consider using proper nginx user setup or init system
+# For now, keeping as root for container compatibility
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
